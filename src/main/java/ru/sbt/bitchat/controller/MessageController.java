@@ -1,35 +1,31 @@
 package ru.sbt.bitchat.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import ru.sbt.bitchat.entity.MessageEntity;
 import ru.sbt.bitchat.repository.MessageRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static ru.sbt.bitchat.dto.MessageStatus.SENT;
 
 @RestController
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageRepository messageRepository;
 
-    @GetMapping("/messageId")
-    public List<MessageEntity> get(@RequestParam long messageId) {
-        int n = 20;
-        LocalDateTime timeStamp = messageRepository.findById(messageId).get().getTime();
-        List<MessageEntity> messages = messageRepository
-                .findAll(Sort.by(Sort.Direction.DESC, "time"))
-                .stream()
-                .filter((message) -> message.getTime().compareTo(timeStamp) <= 0)
-                .limit(n)
-                .collect(Collectors.toList());
-        return messages;
+    public static final int MESSAGE_BATCH_SIZE = 10;
+
+    @GetMapping("/get")
+    public List<MessageEntity> get(@RequestParam long id) {
+        return messageRepository.getByLastNBefore(id, MESSAGE_BATCH_SIZE);
     }
 
-    @PostMapping
+    @PutMapping("/add")
     public long add(@RequestBody MessageEntity entity) {
-        return 0;
+        entity.setTime(LocalDateTime.now());
+        entity.setStatus(SENT);
+        return messageRepository.saveAndFlush(entity).getId();
     }
 }
