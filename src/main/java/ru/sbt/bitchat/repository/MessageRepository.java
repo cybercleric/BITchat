@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.sbt.bitchat.entity.MessageEntity;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
@@ -14,4 +16,6 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             "where time <= (select time from messages where id = (:id)) " +
             "order by time desc limit (:n)", nativeQuery = true)
     List<MessageEntity> getByLastNBefore(@Param("id") Long id, @Param("n") int n);
+
+    Optional<MessageEntity> findByIdempotenceId(UUID idempotenceId);
 }
