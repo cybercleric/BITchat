@@ -8,7 +8,6 @@ import ru.sbt.bitchat.repository.MessageRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static ru.sbt.bitchat.dto.MessageStatus.SENT;
 
@@ -27,7 +26,6 @@ public class MessageController {
     @PutMapping("/add")
     @Retryable
     public long add(@RequestBody MessageEntity entity) {
-
         entity.setTime(LocalDateTime.now());
         entity.setStatus(SENT);
         return messageRepository.saveAndFlush(entity).getId();
