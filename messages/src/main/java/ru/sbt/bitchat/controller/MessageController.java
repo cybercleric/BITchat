@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +20,6 @@ import static ru.sbt.bitchat.dto.MessageStatus.SENT;
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageRepository messageRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
     public static final int MESSAGE_BATCH_SIZE = 10;
 
@@ -33,12 +31,9 @@ public class MessageController {
     @MessageMapping("/messages")
     @SendTo("/topic/messages")
     @Retryable
-    public void add(@Payload MessageEntity message) {
+    public MessageEntity add(@Payload MessageEntity message) {
         message.setStatus(SENT);
         message.setTime(now());
-        messagingTemplate.convertAndSend(
-                "/topic/messages",
-                messageRepository.saveAndFlush(message)
-        );
+        return messageRepository.saveAndFlush(message);
     }
 }
