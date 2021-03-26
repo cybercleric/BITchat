@@ -1,14 +1,19 @@
 package ru.sbt.bitchat.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.sbt.bitchat.entity.MessageEntity;
 import ru.sbt.bitchat.repository.MessageRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static ru.sbt.bitchat.dto.MessageStatus.SENT;
 
 @RestController
@@ -23,11 +28,12 @@ public class MessageController {
         return messageRepository.getByLastNBefore(id, MESSAGE_BATCH_SIZE);
     }
 
-    @PutMapping("/add")
+    @MessageMapping("/messages")
+    @SendTo("/topic/messages")
     @Retryable
-    public long add(@RequestBody MessageEntity entity) {
-        entity.setTime(LocalDateTime.now());
-        entity.setStatus(SENT);
-        return messageRepository.saveAndFlush(entity).getId();
+    public MessageEntity add(@Payload MessageEntity message) {
+        message.setStatus(SENT);
+        message.setTime(now());
+        return messageRepository.saveAndFlush(message);
     }
 }
