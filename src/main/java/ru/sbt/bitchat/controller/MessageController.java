@@ -2,19 +2,19 @@ package ru.sbt.bitchat.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.sbt.bitchat.entity.MessageEntity;
 import ru.sbt.bitchat.repository.MessageRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static ru.sbt.bitchat.dto.MessageStatus.SENT;
 
 @RestController
@@ -31,18 +31,14 @@ public class MessageController {
     }
 
     @MessageMapping("/messages")
-    @SendTo("/chat/messages")
+    @SendTo("/topic/messages")
     @Retryable
-    public long add(@RequestBody MessageEntity entity) {
-        System.out.println("=)");
-        entity.setTime(LocalDateTime.now());
-        entity.setStatus(SENT);
-
+    public void add(@Payload MessageEntity message) {
+        message.setStatus(SENT);
+        message.setTime(now());
         messagingTemplate.convertAndSend(
-                "/chat/messages",
-                entity
+                "/topic/messages",
+                messageRepository.saveAndFlush(message)
         );
-
-        return messageRepository.saveAndFlush(entity).getId();
     }
 }

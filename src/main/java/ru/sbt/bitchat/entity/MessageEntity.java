@@ -1,6 +1,9 @@
 package ru.sbt.bitchat.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.sbt.bitchat.dto.MessageStatus;
 
 import javax.persistence.*;
@@ -10,6 +13,9 @@ import java.util.UUID;
 import static javax.persistence.GenerationType.SEQUENCE;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "messages", uniqueConstraints = {@UniqueConstraint(columnNames = "idempotenceId")})
 public class MessageEntity {
