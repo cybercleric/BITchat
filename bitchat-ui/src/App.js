@@ -30,7 +30,7 @@ function App() {
         <h1>BitChat</h1>
         <h3>(userId: {userId})</h3>
         <div>
-            <SockJsClient url='http://localhost:8080/bitchat-ws' topics={['/topic/messages']}
+            <SockJsClient url='/backend/bitchat-ws' topics={['/topic/messages']}
                           onMessage={handleMessage}
                           ref={client => clientRef = client}/>
         </div>
